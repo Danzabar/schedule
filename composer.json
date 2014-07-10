@@ -1,0 +1,19 @@
+{
+    "name": "danzabar/schedule",
+    "description": "A complex schedule builder.",
+    "authors": [
+        {
+            "name": "Daniel Cox",
+            "email": "danzabian@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+    
+    },
+    "autoload": {
+        "psr-4": {
+            "Danzabar\\Schedule\\": "src/"
+        }
+    }
+}
