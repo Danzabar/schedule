@@ -13,7 +13,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Danzabar\\Schedule\\": "src/"
+            "Danzabar\\Schedule\\": "src/",
+            "Danzabar\\Schedule\\Helpers\\": "src/helpers/"
         }
     }
 }

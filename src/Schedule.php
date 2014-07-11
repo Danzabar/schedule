@@ -60,8 +60,8 @@ Class Schedule
         $this->activities = array();
         $this->work_hours = array();
         
-        $this->builder = new Builder;
-        $this->assumption = new Assumption;
+        $this->builder = new \Danzabar\Schedule\Helpers\Builder;
+        $this->assumption = new \Danzabar\Schedule\Helpers\Assumption;       
     }
     
     /**
