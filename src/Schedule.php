@@ -38,6 +38,14 @@ Class Schedule
      */
     protected $work_hours;
     
+    
+    /**
+     *  The step up of time, currently only supports hourly, but plans
+     *  for the future at early stages are better
+     * 
+     */
+    protected $increments;
+    
     /**
      *  An instance of the Builder Class
      * 
@@ -60,8 +68,22 @@ Class Schedule
         $this->activities = array();
         $this->work_hours = array();
         
+        $this->increments = 'hourly';
+        
         $this->builder = new \Danzabar\Schedule\Helpers\Builder;
         $this->assumption = new \Danzabar\Schedule\Helpers\Assumption;       
+    }
+    
+    /**
+     *  Takes the current settings and passes them to the builder, who
+     *  will return a json formatted schedule for us.
+     * 
+     */
+    public function build()
+    {
+        $settings = $this->assume();
+        
+        print_r($settings);
     }
     
     /**
@@ -75,6 +97,10 @@ Class Schedule
         return $this;
     }
     
+    /**
+     *  Update the work hours variable.
+     *  
+     */
     public function setWorkHours($hours = array())
     {
         $this->work_hours = $hours;
@@ -82,10 +108,23 @@ Class Schedule
         return $this;
     }
     
+    /**
+     *  The add activity function accepts a SINGLE activity. The reasoning
+     *  behind this is to reduce the complexity needed to add it, its alot
+     *  easier calling this multiple times than it is to format a massive
+     *  array with the details this requires.
+     * 
+     * 
+     */
     public function addActivity($name, $max = NULL, $times = array())
     {
         $this->activities[$name] = array('max' => $max, 'times' => $times); 
         
         return $this;
+    }
+    
+    private function assume()
+    {
+        return $this->assumption->process($this->excluded_times, $this->work_hours, $this->activities, $this->increments);      
     }
 }
