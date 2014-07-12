@@ -82,8 +82,6 @@ Class Schedule
     public function build()
     {
         $settings = $this->assume();
-        
-        print_r($settings);
     }
     
     /**
