@@ -36,7 +36,14 @@ Class Assumption
         $this->day_maps = array(
             'Weekday'   => array(1,2,3,4,5),
             'Everyday'  => array(0,1,2,3,4,5,6),
-            'Weekend'   => array(0,6)
+            'Weekend'   => array(0,6),
+            'Sunday'    => array(0),
+            'Monday'    => array(1),
+            'Tuesday'   => array(2),
+            'Wednesday' => array(3),
+            'Thursday'  => array(4),
+            'Friday'    => array(5),
+            'Saturday'  => array(6)
         );
     }
     
@@ -81,7 +88,6 @@ Class Assumption
         
         $this->addActivities($activities);
         
-        print_r($this->format);
     }
     
     /**
@@ -103,6 +109,8 @@ Class Assumption
                 foreach($this->day_maps[$day] as $day)
                 {
                     $this->format[$day] = array_merge($this->format[$day], $this->extendTimes($times, $label));
+                    
+                    // Order by time (key)
                     ksort($this->format[$day]);
                 }
             }
@@ -184,13 +192,77 @@ Class Assumption
          *  - Minimum amount should be 2 hours per block. where possible
          *  - If there is an hour spare, we'd rather do a 3 hour block than a 1.
          */
+        $timeLeft = $this->timeLeft();       
         
+        $timeMap = $this->splitByDays($timeLeft, $hours);
+    }
+    
+    private function splitByDays($timeLeft, $hours)
+    {
+        arsort($timeLeft);
+        $timeAllocated = array();
+        $key_order = array_keys($timeLeft);
+        /**
+         *  Some rules for this function:
+         *  - put more time on the days that have more time to spare,
+         *  - Where possible, put times in big chunks and spread the chunks out.
+         */
+        #if($hours >= 14)
+        #{
+            // If the amount of hours are over 14, we can do a straight percent based take
+            // of hours.
+            
+            
+        #} else {
+            
+            // Otherwise we will have to calculate the best way to allocate this and exclude
+            // some days. 
+            
+            $hours_per_day = ceil($hours / count($key_order));
+            
+            if($hours_per_day < 2)
+            {
+                // Cut the days down.
+                $hours_per_day = ceil($hours / (count($key_order) / 2));
+            }
+            
+            $days = floor($hours / $hours_per_day);
+            
+            for($i = 0;$i < $days;$i++)
+            {
+                $timeAllocated[$key_order[$i]] = $hours_per_day;
+            }
+            
+            // Any left over.
+            if($hours_per_day * $days !== $hours)
+            {
+                $leftover = ($hours - ($hours_per_day * $days));
+                
+                // Put on the most free day.
+                $timeAllocated[$key_order[0]] = ($leftover + $timeAllocated[$key_order[0]]);
+            }
+        #}
+        
+        print_r($hours_per_day);
+        echo '<br/>';
+        print_r($days);
+        echo '<br/>';
+        var_dump($timeAllocated);
     }
     
     private function timeLeft()
     {
+        $times = array();
         
+        for($i = 0; $i < 7; $i++)
+        {
+            if(24 - count($this->format[$i]) > 0)
+            {
+                $times[$i] = (24 - count($this->format[$i]));
+            }
+        }
         
+        return $times;
     }
     
     
