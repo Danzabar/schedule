@@ -183,15 +183,6 @@ Class Assumption
             // Todo, Assume some hours here;
         }
         
-        /**
-         *  Once we have hours we need to assign these to days,
-         *  this process should follow these rules:
-         *  
-         *  - Prefer to put them on days that dont have much time.
-         *  - Prefer to put them in chunks rather than split out
-         *  - Minimum amount should be 2 hours per block. where possible
-         *  - If there is an hour spare, we'd rather do a 3 hour block than a 1.
-         */
         $timeLeft = $this->timeLeft();       
         
         $timeMap = $this->splitByDays($timeLeft, $hours);
@@ -200,24 +191,26 @@ Class Assumption
     private function splitByDays($timeLeft, $hours)
     {
         arsort($timeLeft);
-        $timeAllocated = array();
+        $timeAllocated = array(
+            0 => 0,
+            1 => 0,
+            2 => 0,
+            3 => 0,
+            4 => 0,
+            5 => 0,
+            6 => 0
+        );
         $key_order = array_keys($timeLeft);
-        /**
-         *  Some rules for this function:
-         *  - put more time on the days that have more time to spare,
-         *  - Where possible, put times in big chunks and spread the chunks out.
-         */
-        #if($hours >= 14)
-        #{
-            // If the amount of hours are over 14, we can do a straight percent based take
-            // of hours.
-            
-            
-        #} else {
-            
-            // Otherwise we will have to calculate the best way to allocate this and exclude
-            // some days. 
-            
+        $finished = false;
+        $initial_hours = $hours;
+        
+        while(!$finished)
+        {
+            /**
+             *  Some rules for this function:
+             *  - put more time on the days that have more time to spare,
+             *  - Where possible, put times in big chunks and spread the chunks out.
+             */
             $hours_per_day = ceil($hours / count($key_order));
             
             if($hours_per_day < 2)
@@ -228,25 +221,45 @@ Class Assumption
             
             $days = floor($hours / $hours_per_day);
             
-            for($i = 0;$i < $days;$i++)
+            if($days > count($key_order))
             {
-                $timeAllocated[$key_order[$i]] = $hours_per_day;
+                $days = count($key_order);
             }
             
-            // Any left over.
-            if($hours_per_day * $days !== $hours)
+            for($i = 0;$i < $days;$i++)
             {
-                $leftover = ($hours - ($hours_per_day * $days));
                 
-                // Put on the most free day.
-                $timeAllocated[$key_order[0]] = ($leftover + $timeAllocated[$key_order[0]]);
+                if($timeLeft[$key_order[$i]] >= $hours_per_day)
+                {                    
+                    $timeAllocated[$key_order[$i]] = ($timeAllocated[$key_order[$i]] + $hours_per_day);
+                    
+                    $hours = ($hours - $hours_per_day);
+                    
+                    // Remove the timeleft also
+                    $timeLeft[$key_order[$i]] = ($timeLeft[$key_order[$i]] - $hours_per_day);
+                    
+                } else 
+                {
+                    $timeAllocated[$key_order[$i]] = ($timeAllocated[$key_order[$i]] + $timeLeft[$key_order[$i]]);
+                    
+                    $hours = ($hours - $timeLeft[$key_order[$i]]);
+                    
+                    $timeLeft[$key_order[$i]] = 0;
+                    
+                    unset($key_order[$i]);                    
+                }
             }
-        #}
+            
+            $key_order = array_values($key_order);
+            
+            if($hours <= 0 || empty($key_order))
+            {
+                $finished = true;
+            }          
+        }
         
-        print_r($hours_per_day);
-        echo '<br/>';
-        print_r($days);
-        echo '<br/>';
+        var_dump($initial_hours);
+        var_dump($hours);
         var_dump($timeAllocated);
     }
     
