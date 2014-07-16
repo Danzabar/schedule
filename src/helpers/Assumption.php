@@ -114,6 +114,17 @@ Class Assumption
                     ksort($this->format[$day]);
                 }
             }
+            
+            /**
+             *  If it comes in already formated.
+             * 
+             */
+            if(is_numeric($day))
+            {
+                $this->format[$day] = array_merge($this->format[$day], $this->extendTimes($times, $label));
+                
+                ksort($this->format[$day]);
+            }
         }
     }
     
@@ -212,6 +223,11 @@ Class Assumption
         $key_order = array_keys($timeLeft);
         $finished = false;
         
+        if(empty($key_order))
+        {
+            return $timeAllocated;
+        }
+        
         while(!$finished)
         {
             /**
@@ -276,19 +292,28 @@ Class Assumption
      */
     private function assignTimeToDays($timeDayArr)
     {
+        $entries = array();
+        
         foreach($timeDayArr as $day => $hours)
         {
             if($hours > 0)
             {
                 $available = $this->getAvailableTimes($day, $hours);
-            
+                
                 $start = $available[0];
+                
                 $end = $available[$hours - 1];
-            
-                var_dump($start);
-                var_dump($end);
+                
+                // Temp fix for missing hour :(
+                $endBomb = explode(':', $end);
+                $endDate = Carbon::createFromTime($endBomb[0], $endBomb[1], $endBomb[2]);
+                $endDate->addHour();
+                
+                $entries[$day] = array($start => $endDate->toTimeString());
             }
         }
+        
+        return $entries;
     }
     
     /** 
