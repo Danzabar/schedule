@@ -121,6 +121,13 @@ Class Schedule
         return $this;
     }
     
+    /**
+     *  Uses the assumption class to build a full day of allocated time,
+     *  including extending the hours from already made allocations
+     *  and assigning hours and times to day from activities we are yet
+     *  to specify time for.
+     * 
+     */
     private function assume()
     {
         return $this->assumption->process($this->excluded_times, $this->work_hours, $this->activities, $this->increments);      

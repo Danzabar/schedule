@@ -15,9 +15,8 @@ $schedule->setExcludes([
     'Weekend' => ['00:00' => '10:00', '23:00' => '00:00']
 ]);
 
-
 $schedule->addActivity('Coding', 10);
-$schedule->addActivity('Gaming', NULL, ['Weekday' => ['18:00' => '20:00'], 'Weekend' => ['10:00' => '12:00']]);
+$schedule->addActivity('Gaming', 4);
 
 echo '<pre>';
 $schedule->build();

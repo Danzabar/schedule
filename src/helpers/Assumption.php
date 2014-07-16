@@ -54,8 +54,9 @@ Class Assumption
      */
     public function process($excludes, $work_hours, $activities, $increments)
     {
-        $formatted_arr = $this->formatArr($excludes, $work_hours, $activities);
+        $this->formatArr($excludes, $work_hours, $activities);
         
+        print_r($this->format);
     }
     
     /**
@@ -86,8 +87,7 @@ Class Assumption
             $this->extractTimes($work_hours, 'Work');
         }
         
-        $this->addActivities($activities);
-        
+        $this->addActivities($activities);        
     }
     
     /**
@@ -185,11 +185,20 @@ Class Assumption
         
         $timeLeft = $this->timeLeft();       
         
-        $timeMap = $this->splitByDays($timeLeft, $hours);
+        $timeMap = $this->splitByDays($hours);
+        
+        return $this->assignTimeToDays($timeMap);
     }
     
-    private function splitByDays($timeLeft, $hours)
+    /**
+     *  Takes hours and splits them by days, if we give this 10 hours say
+     *  it will allocate some hours to each day or your least busiest day
+     *  if theres not enough hours.
+     * 
+     */
+    private function splitByDays($hours)
     {
+        $timeLeft = $this->timeLeft();
         arsort($timeLeft);
         $timeAllocated = array(
             0 => 0,
@@ -202,7 +211,6 @@ Class Assumption
         );
         $key_order = array_keys($timeLeft);
         $finished = false;
-        $initial_hours = $hours;
         
         while(!$finished)
         {
@@ -258,11 +266,70 @@ Class Assumption
             }          
         }
         
-        var_dump($initial_hours);
-        var_dump($hours);
-        var_dump($timeAllocated);
+        return $timeAllocated;
     }
     
+    /**
+     *  Uses the times assigned from previous function to allocate
+     *  times to days, ie set 17:00:00 => 18:00:00 for this activity.
+     * 
+     */
+    private function assignTimeToDays($timeDayArr)
+    {
+        foreach($timeDayArr as $day => $hours)
+        {
+            if($hours > 0)
+            {
+                $available = $this->getAvailableTimes($day, $hours);
+            
+                $start = $available[0];
+                $end = $available[$hours - 1];
+            
+                var_dump($start);
+                var_dump($end);
+            }
+        }
+    }
+    
+    /** 
+     *  Returns an array of available times for a day, if you include
+     *  the hasHours parameter it will make sure it only passes start
+     *  times that have enough hours behind it to complete the task.
+     * 
+     */
+    private function getAvailableTimes($day, $hasHours = NULL)
+    {
+        $allocatedToDay = $this->format[$day];
+        $available = array();
+        
+        $start = Carbon::createFromTime(01, 00, 00);
+        $end = Carbon::createFromTime(00, 00, 00);
+        
+        while($start->toTimeString() !== $end->toTimeString())
+        {
+            if(!array_key_exists($start->toTimeString(), $allocatedToDay))
+            {
+                $available[] = $start->toTimeString();
+            }            
+            
+            $start->addHour();
+        }
+        
+        if($hasHours !== NULL)
+        {            
+            for($i = 0;$i < $hasHours;$i++)
+            {
+                
+            }
+        }
+        
+        return $available;
+    }
+    
+    /**
+     *  Builds a count of hours left for each day.
+     *  
+     */
     private function timeLeft()
     {
         $times = array();
