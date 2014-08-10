@@ -29,22 +29,7 @@ Class Schedule
      *  
      *  (array)
      */
-    protected $activities;
-    
-    /**
-     *  Work/Wasted hours
-     *  the hours you devote to the rat race. Same format as excluded times 
-     *  (array)
-     */
-    protected $work_hours;
-    
-    
-    /**
-     *  The step up of time, currently only supports hourly, but plans
-     *  for the future at early stages are better
-     * 
-     */
-    protected $increments;
+    protected $activities;    
     
     /**
      *  An instance of the Builder Class
@@ -59,16 +44,13 @@ Class Schedule
     protected $assumption;
     
     
-    public function __construct($name)
+    public function __construct($name, $assume_missing_time = FALSE)
     {
         $this->name = $name;
         
         // Set vars as empty arrays where nessecary
         $this->excluded_times = array();
         $this->activities = array();
-        $this->work_hours = array();
-        
-        $this->increments = 'hourly';
         
         $this->builder = new \Danzabar\Schedule\Helpers\Builder;
         $this->assumption = new \Danzabar\Schedule\Helpers\Assumption;       
@@ -82,26 +64,17 @@ Class Schedule
     public function build()
     {
         $settings = $this->assume();
+        
+        print_r($settings);
     }
     
     /**
      *  Allows you to update excluded times.
      * 
      */
-    public function setExcludes($excludes = array())
+    public function setExcludes($excludes = array(), $label)
     {
-        $this->excluded_times = $excludes;
-        
-        return $this;
-    }
-    
-    /**
-     *  Update the work hours variable.
-     *  
-     */
-    public function setWorkHours($hours = array())
-    {
-        $this->work_hours = $hours;
+        $this->excluded_times[$label] = $excludes;
         
         return $this;
     }
@@ -130,6 +103,6 @@ Class Schedule
      */
     private function assume()
     {
-        return $this->assumption->process($this->excluded_times, $this->work_hours, $this->activities, $this->increments);      
+        return $this->assumption->process($this->excluded_times, $this->activities);      
     }
 }
