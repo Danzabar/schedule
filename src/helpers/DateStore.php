@@ -15,7 +15,7 @@ Class DateStore
      *  Maps Keywords to numerical date values. 
      * 
      */
-    protected $day_maps = array(
+    public $day_maps = array(
         'Weekday'   => array(1,2,3,4,5),
         'Everyday'  => array(0,1,2,3,4,5,6),
         'Weekend'   => array(0,6),
@@ -42,8 +42,13 @@ Class DateStore
     protected $time_left;
  
     
-    public function getStore()
+    public function getStore($format_dates = FALSE)
     {
+        if($format_dates)
+        {
+            $this->strToTime();
+        }
+                
         return $this->dateStore;
     }
     
@@ -143,6 +148,44 @@ Class DateStore
         
         return intval($frags[0]);
     }    
+    
+     /**
+     *  Counts the time spent on activities and 
+     *  the total time spent for schedule.
+     * 
+     */
+    public function countStore()
+    {
+        $activity_time = array();
+        $activity_time_by_day = array();
+        $total_time = 0;
+        
+        foreach($this->dateStore as $day => $store)
+        {
+            foreach($store as $time => $label)
+            {
+                if(isset($activity_time[$label]))
+                {
+                    $activity_time[$label] = $activity_time[$label] + 1;
+                } else
+                {
+                    $activity_time[$label] = 1;
+                }
+                
+                if(isset($activity_time_by_day[$day][$label]))
+                {
+                    $activity_time_by_day[$day][$label] = $activity_time_by_day[$day][$label] + 1;
+                } else
+                {
+                    $activity_time_by_day[$day][$label] = 1;
+                }
+                
+                $total_time = $total_time + 1;
+            }
+        }
+        
+        return array('activity_time' => $activity_time, 'activity_time_by_day' => $activity_time_by_day, 'total' => $total_time);
+    }
     
     /**
      *  Takes hours and splits them by days, if we give this 10 hours say
@@ -323,4 +366,35 @@ Class DateStore
         
         return $mapped_arr;
     }
+    
+    /** 
+     *  Private Helper: converts array labels back to standard dates
+     *  ie 10_hour = 10:00
+     * 
+     */
+    private function strToTime()
+    {
+        foreach($this->dateStore as $day => $times)
+        {
+            $replace = array();
+            
+            foreach($times as $time => $label)
+            {
+                $raw = str_replace('_hour', '', $time);
+                
+                if(strlen($raw) > 1)
+                {
+                    $time = $raw.":00";
+                } else
+                {
+                    $time = "0".$raw.":00";
+                }
+                
+                $replace[$time] = $label; 
+            }
+            
+            $this->dateStore[$day] = $replace;
+        }
+    }
+    
 }

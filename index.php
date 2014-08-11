@@ -14,11 +14,17 @@ $schedule->setExcludes([
     'Weekend' => ['00:00' => '09:00', '23:00' => '24:00']
 ], 'Sleep');
 
-$schedule->addActivity('Coding', 23);
-$schedule->addActivity('Learning', 5);
-$schedule->addActivity('Reading', 25);
-$schedule->addActivity('Gaming', 3);
+$schedule->addActivity('Coding', 20, [
+    'Weekday' => ['07:00' => '08:00', '16:00' => '17:00']
+]);
+$schedule->addActivity('Learning', 7);
+$schedule->addActivity('Reading', 13);
+$schedule->addActivity('Gaming', 15);
 
 echo '<pre>';
-$schedule->build();
+$builder = $schedule->build();
+print_r($builder->getActivityTime());
+print_r($builder->getActivityTimeByDay());
+print_r($builder->getTotalTime());
+echo $builder->convertIndexes()->toJSON();
 echo '</pre>';

@@ -50,10 +50,9 @@ Class Schedule
         
         // Set vars as empty arrays where nessecary
         $this->excluded_times = array();
-        $this->activities = array();
+        $this->activities = array();        
         
-        $this->builder = new \Danzabar\Schedule\Helpers\Builder;
-        $this->assumption = new \Danzabar\Schedule\Helpers\Assumption;       
+        $this->assumption = new \Danzabar\Schedule\Helpers\Assumption($this->name, $assume_missing_time);       
     }
     
     /**
@@ -65,7 +64,7 @@ Class Schedule
     {
         $settings = $this->assume();
         
-        print_r($settings);
+        return new \Danzabar\Schedule\Helpers\Builder($settings, $this->name);
     }
     
     /**

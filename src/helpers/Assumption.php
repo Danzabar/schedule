@@ -25,11 +25,20 @@ Class Assumption
     protected $assume_time;
     
     /**
+     *  Acitvity time
+     *  used as an informative figure.
+     * 
+     */
+    protected $activity_time;
+    
+    
+    protected $schedule_name;
+    
+    /**
      *  The formatted array
      * 
      */
-    public $format;
-    
+    public $format;   
     
     /**
      *  The time left for each day - Gets reset when time is taken away
@@ -39,9 +48,9 @@ Class Assumption
     public $time_left;
     
     
-    public function __construct($assume_time)
+    public function __construct($name, $assume_time)
     {
-        $this->settings = array();
+        $this->schedule_name = $name;
         
         $this->assume_time = $assume_time;
         
@@ -67,10 +76,19 @@ Class Assumption
         
         // Process the activities
         $this->processActivities($activities);
-       
-
-        return $this->dateStore->getStore();
-    }
+        
+        $total_hours = $this->dateStore->getTimeLeft();
+        $time_counts = $this->dateStore->countStore();
+        
+        return array(
+                $this->schedule_name => array (
+                'schedule' => $this->dateStore->getStore(TRUE),
+                'hours_left' => $total_hours['total'],
+                'activity_time' => $time_counts['activity_time'],
+                'activity_time_by_day' => $time_counts['activity_time_by_day'],
+                'total_time' => $time_counts['total']
+                ));
+     }
     
     /**
      *  Process Activities - uses the date store to allocate time to activities,
@@ -84,9 +102,22 @@ Class Assumption
         $total_activity_time = 0;
         
         // total activity times
-        foreach($activities as $activity)
+        foreach($activities as $label => $activity)
         {
+            if(!empty($activity['times']))
+            {
+                foreach($activity['times'] as $day => $times)
+                {
+                    $this->dateStore->addTime($label, $day, $times);
+                }
+                
+                $total_hours = $this->dateStore->getTimeLeft();
+            }
+            
             $total_activity_time =  $total_activity_time + $activity['max'];
+            
+            // Save this for further usage
+            $this->activity_time[$label] = $activity['max'];
         }
         
         if($this->assume_time)
@@ -108,7 +139,10 @@ Class Assumption
         // At this point we have our quota hours. Lets fill our activities with times.
         foreach($activities as $label =>  $activity)
         {
-            $activity['times'] = $this->addTimeToActivity($activity, $label);
+            if($activity['max'] > 0)
+            {
+                $this->addTimeToActivity($activity, $label);
+            }
         }
     }
     
@@ -136,7 +170,5 @@ Class Assumption
             }            
         }
     }
-    
-    
     
 }
