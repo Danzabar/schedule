@@ -54,7 +54,7 @@ Class Assumption
         
         $this->assume_time = $assume_time;
         
-        $this->dateStore = new DateStore;       
+        $this->dateStore = new DateStore($assume_time);       
     }
 
     /** 
